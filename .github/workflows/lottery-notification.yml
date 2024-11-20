@@ -9,6 +9,7 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
+    environment: daletou
 
     steps:
       - uses: actions/checkout@v2
