@@ -2,9 +2,9 @@ name: Lottery Notification
 
 on:
   schedule:
-    # 每周二、四、日的早上 10:00 运行（UTC+8 = UTC+0 02:00）
-    - cron: '0 2 * * 2,4,0'  # 注意：周日在 cron 中用 0 表示
-  workflow_dispatch:  # 允许手动触发
+    # 每周二、四、日的早上 10:00 运行
+    - cron: '0 10 * * 2,4,0'
+  workflow_dispatch:
 
 jobs:
   notify:
@@ -13,6 +13,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set up timezone
+        uses: szenius/set-timezone@v1.2
+        with:
+          timezoneLinux: "Asia/Shanghai"
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -28,4 +33,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python lottery_notify.py
+          TZ: "Asia/Shanghai"
+        run: |
+          echo "Current time: $(date)"
+          python lottery_notify.py
