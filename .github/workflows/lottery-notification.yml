@@ -2,8 +2,8 @@ name: Lottery Notification
 
 on:
   schedule:
-    # 每周二、四、日的早上 10:00 运行（北京时间）
-    - cron: '0 2 * * 2,4,0'  # UTC 02:00 = 北京时间 10:00
+    # 每周二、四、日的早上 8:50 运行（北京时间）
+    - cron: '50 0 * * 2,4,0'  # UTC 00:50 = 北京时间 8:50
   workflow_dispatch:
 
 jobs:
@@ -20,10 +20,10 @@ jobs:
           echo "Workflow: ${{ github.workflow }}"
           echo "Current UTC time: $(date -u)"
 
-      - uses: actions/checkout@v4    # 更新到 v4 版本
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5    # 更新到 v5 版本
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
@@ -32,8 +32,32 @@ jobs:
           python -m pip install --upgrade pip
           pip install python-telegram-bot aiohttp
 
-      - name: Run notification script
+      # 添加重试机制
+      - name: Run notification script with retry
+        uses: nick-fields/retry@master
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          command: python lottery_notify.py
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python lottery_notify.py
+
+      # 添加空提交保持活跃
+      - name: Keep Running
+        run: |
+          git config --local user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          git config --local user.name "${{ github.actor }}"
+          git remote set-url origin https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}
+          git pull --rebase --autostash
+          git commit --allow-empty -m "🎯 Keep lottery notification running..."
+          git push
+
+      # 清理历史记录
+      - name: Delete old workflow runs
+        uses: Mattraks/delete-workflow-runs@main
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 30        # 保留最近 30 天的记录
+          keep_minimum_runs: 30  # 至少保留 30 条运行记录
