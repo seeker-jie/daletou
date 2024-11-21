@@ -4,6 +4,7 @@ on:
   schedule:
     # 每周二、四、日的早上 10:00 运行（北京时间）
     - cron: '0 2 * * 2,4,0'  # UTC 02:00 = 北京时间 10:00
+  workflow_dispatch:
 
 jobs:
   notify:
@@ -11,10 +12,18 @@ jobs:
     environment: daletou
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Debug Information
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Current UTC time: $(date -u)"
+
+      - uses: actions/checkout@v4    # 更新到 v4 版本
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5    # 更新到 v5 版本
         with:
           python-version: '3.x'
 
