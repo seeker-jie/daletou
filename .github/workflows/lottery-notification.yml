@@ -1,10 +1,13 @@
 name: Lottery Notification
 
+#on:
+#  schedule:
+#    # 每周二、四、日的早上 10:00 运行（北京时间）
+#    - cron: '0 2 * * 2,4,0'  # UTC 02:00 = 北京时间 10:00
+#  workflow_dispatch:
 on:
   schedule:
-    # 每周二、四、日的早上 10:00 运行（北京时间）
-    - cron: '0 2 * * 2,4,0'  # UTC 02:00 = 北京时间 10:00
-  workflow_dispatch:
+    - cron: '*/30 * * * *'  # 每30分钟运行一次（仅供测试）
 
 jobs:
   notify:
